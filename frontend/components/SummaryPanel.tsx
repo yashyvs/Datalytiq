@@ -6,88 +6,168 @@ export default function SummaryPanel({ data }: Props) {
   return (
     <div
       className="
-mt-10
-rounded-2xl
-border
-border-zinc-700
-bg-zinc-900
-p-6
-text-white
-space-y-6
-"
+      mt-10
+      bg-zinc-900
+      border
+      border-zinc-700
+      rounded-2xl
+      p-6
+      text-white
+      space-y-8
+      "
     >
       <h2 className="text-2xl font-bold">Dataset Summary</h2>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-zinc-800 rounded-xl p-4">
+      {/* Stats cards */}
+
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="bg-zinc-800 p-5 rounded-xl">
           <p className="text-gray-400">Rows</p>
 
-          <h3 className="text-2xl font-bold">{data.rows}</h3>
+          <h1 className="text-3xl font-bold">{data.rows}</h1>
         </div>
 
-        <div className="bg-zinc-800 rounded-xl p-4">
+        <div className="bg-zinc-800 p-5 rounded-xl">
           <p className="text-gray-400">Columns</p>
 
-          <h3 className="text-2xl font-bold">{data.columns}</h3>
+          <h1 className="text-3xl font-bold">{data.columns}</h1>
         </div>
 
-        <div className="bg-zinc-800 rounded-xl p-4">
-          <p className="text-gray-400">Duplicates</p>
+        <div className="bg-zinc-800 p-5 rounded-xl">
+          <p className="text-gray-400">Duplicate Rows</p>
 
-          <h3 className="text-2xl font-bold">{data.duplicate_rows}</h3>
+          <h1 className="text-3xl font-bold">{data.duplicate_rows}</h1>
         </div>
       </div>
 
-      <div>
-        <h3 className="font-semibold mb-2">Column Names</h3>
+      {/* columns */}
 
-        <div className="flex flex-wrap gap-2">
+      <div>
+        <h3
+          className="
+          font-bold
+          mb-4
+          "
+        >
+          Columns
+        </h3>
+
+        <div
+          className="
+          max-h-32
+          overflow-y-auto
+          flex
+          flex-wrap
+          gap-2
+          p-2
+          bg-zinc-800
+          rounded-xl
+          "
+        >
           {data.column_names.map((col: string) => (
-            <div
+            <span
               key={col}
               className="
-bg-blue-600
-px-4
-py-2
-rounded-full
-"
+                  px-3
+                  py-1
+                  rounded-full
+                  bg-blue-600
+                  text-sm
+                  "
             >
               {col}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Missing values */}
+
+      <div>
+        <h3 className="font-bold mb-3">Missing Values</h3>
+
+        <div className="bg-zinc-800 rounded-xl p-4">
+          {Object.entries(data.missing_values).map(([key, value]: any) => (
+            <div
+              key={key}
+              className="
+flex
+justify-between
+border-b
+border-zinc-700
+py-2
+"
+            >
+              <span>{key}</span>
+
+              <span>{String(value)}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div>
-        <h3 className="font-semibold mb-2">Missing Values</h3>
-
-        <pre
-          className="
-bg-zinc-800
-p-4
-rounded
-overflow-auto
-text-sm
-"
-        >
-          {JSON.stringify(data.missing_values, null, 2)}
-        </pre>
-      </div>
+      {/* Preview */}
 
       <div>
-        <h3 className="font-semibold mb-2">Preview</h3>
-
-        <pre
+        <h3
           className="
-bg-zinc-800
-p-4
-rounded
-overflow-auto
-text-sm
+font-bold
+mb-4
 "
         >
-          {JSON.stringify(data.preview, null, 2)}
-        </pre>
+          Preview
+        </h3>
+
+        <div
+          className="
+overflow-auto
+rounded-xl
+"
+        >
+          <table
+            className="
+w-full
+bg-zinc-800
+"
+          >
+            <thead>
+              <tr>
+                {data.column_names.slice(0, 5).map((col: string) => (
+                  <th
+                    key={col}
+                    className="
+p-3
+text-left
+border-b
+border-zinc-700
+"
+                  >
+                    {col}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {data.preview.map((row: any, i: number) => (
+                <tr key={i}>
+                  {data.column_names.slice(0, 5).map((col: string) => (
+                    <td
+                      key={col}
+                      className="
+p-3
+border-b
+border-zinc-700
+"
+                    >
+                      {String(row[col])}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
