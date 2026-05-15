@@ -1,4 +1,5 @@
 from fastapi import FastAPI,UploadFile
+from tools.graph_tool import generate_graph
 
 from tools.file_loader import (
     save_file,
@@ -27,20 +28,18 @@ async def upload_file(
 
     path=save_file(file)
 
-    df=load_dataframe(
-        path
-    )
+    df=load_dataframe(path)
 
-    summary=generate_summary(
-        df
-    )
+    summary=generate_summary(df)
+
+    graph=generate_graph(df)
 
     return{
 
-        "filename":
-        file.filename,
+        "filename":file.filename,
 
-        "summary":
-        summary
+        "summary":summary,
+
+        "graph":graph
 
     }
