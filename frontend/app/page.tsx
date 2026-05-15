@@ -4,6 +4,7 @@ import { useState } from "react";
 import SummaryPanel from "@/components/SummaryPanel";
 import UploadBox from "@/components/UploadBox";
 import api from "@/services/api";
+import GraphPanel from "@/components/GraphPanel"
 
 export default function Home() {
   const [data, setData] = useState(null);
@@ -29,6 +30,9 @@ export default function Home() {
           <h2 className="font-bold">Dataset Summary</h2>
 
           <SummaryPanel data={data.summary} />
+          <GraphPanel
+            graph={data.graph}
+/>
         </div>
       )}
     </div>

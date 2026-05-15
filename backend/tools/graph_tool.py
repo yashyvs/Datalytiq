@@ -4,46 +4,90 @@ import pandas as pd
 
 def generate_graph(df):
 
+    sample_df = df.head(30)
+
     numeric_cols = list(
-        df.select_dtypes(
-            include=["int64","float64"]
+        sample_df.select_dtypes(
+            include=["int64", "float64"]
         ).columns
     )
 
     categorical_cols = list(
-        df.select_dtypes(
+        sample_df.select_dtypes(
             include=["object"]
         ).columns
     )
 
 
-    if len(categorical_cols)>=1 and len(numeric_cols)>=1:
+    # Remove mostly empty columns
 
-        fig=px.bar(
+    numeric_cols = [
 
-            df,
+        col for col in numeric_cols
 
-            x=categorical_cols[0],
+        if sample_df[col].notna().sum() > 5
 
-            y=numeric_cols[0],
+    ]
 
-            title=f"{numeric_cols[0]} by {categorical_cols[0]}"
-        )
 
-    elif len(numeric_cols)>=2:
 
-        fig=px.scatter(
+    categorical_cols = [
 
-            df,
+        col for col in categorical_cols
 
-            x=numeric_cols[0],
+        if sample_df[col].notna().sum() > 5
 
-            y=numeric_cols[1]
-        )
+    ]
 
-    else:
+
+    if len(numeric_cols)==0:
 
         return None
+
+
+    y_col=numeric_cols[0]
+
+
+    # Prefer company/title over names
+
+    preferred=[
+
+        "Company Name",
+        "Title",
+        "Industry",
+        "Country"
+
+    ]
+
+
+    x_col=None
+
+
+    for col in preferred:
+
+        if col in sample_df.columns:
+
+            x_col=col
+
+            break
+
+
+    if x_col is None and categorical_cols:
+
+        x_col=categorical_cols[0]
+
+
+    fig=px.bar(
+
+        sample_df,
+
+        x=x_col,
+
+        y=y_col,
+
+        title=f"{y_col} by {x_col}"
+
+    )
 
 
     return fig.to_json()
