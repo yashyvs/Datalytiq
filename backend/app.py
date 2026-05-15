@@ -1,5 +1,13 @@
 from fastapi import FastAPI,UploadFile
-from tools.file_loader import save_file
+
+from tools.file_loader import (
+    save_file,
+    load_dataframe
+)
+
+from tools.summary_tool import (
+    generate_summary
+)
 
 app=FastAPI()
 
@@ -7,7 +15,8 @@ app=FastAPI()
 def home():
 
     return{
-        "message":"Welcome to Datalytiq API"
+        "message":
+        "Welcome to Datalytiq API"
     }
 
 
@@ -18,10 +27,20 @@ async def upload_file(
 
     path=save_file(file)
 
+    df=load_dataframe(
+        path
+    )
+
+    summary=generate_summary(
+        df
+    )
+
     return{
 
-        "filename":file.filename,
-        "path":path,
-        "status":"uploaded"
+        "filename":
+        file.filename,
+
+        "summary":
+        summary
 
     }
