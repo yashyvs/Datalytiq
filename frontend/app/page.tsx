@@ -5,6 +5,7 @@ import SummaryPanel from "@/components/SummaryPanel";
 import UploadBox from "@/components/UploadBox";
 import api from "@/services/api";
 import GraphPanel from "@/components/GraphPanel"
+import ChatPanel from "@/components/ChatPanel";
 
 export default function Home() {
   const [data, setData] = useState(null);
@@ -30,9 +31,8 @@ export default function Home() {
           <h2 className="font-bold">Dataset Summary</h2>
 
           <SummaryPanel data={data.summary} />
-          <GraphPanel
-            graph={data.graph}
-/>
+          <GraphPanel graph={data.graph} />
+          <ChatPanel />
         </div>
       )}
     </div>
