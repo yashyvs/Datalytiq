@@ -1,0 +1,11 @@
+fastapi==0.116.1
+uvicorn==0.35.0
+pandas==2.3.1
+python-multipart==0.0.20
+langchain==0.3.x
+langchain-huggingface==0.x.x
+plotly==6.x.x
+transformers==4.x.x
+huggingface-hub==0.x.x
+python-dotenv==1.x.x
+openpyxl==3.x.x
