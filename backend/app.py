@@ -1,5 +1,8 @@
 from fastapi import FastAPI, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from tools.chat_tool import ask_data
+from pydantic import BaseModel
+import state
 
 from tools.graph_tool import generate_graph
 
@@ -30,6 +33,10 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+class ChatRequest(BaseModel):
+
+    question:str
+
 
 @app.get("/")
 def home():
@@ -47,7 +54,9 @@ async def upload_file(
 
     path = save_file(file)
 
-    df = load_dataframe(path)
+    df=load_dataframe(path)
+
+    state.current_df=df
 
     summary = generate_summary(df)
 
@@ -61,5 +70,17 @@ async def upload_file(
         "summary": summary,
 
         "graph": graph
+
+    }
+@app.post("/chat")
+def chat(data:ChatRequest):
+
+    answer=ask_data(
+        data.question
+    )
+
+    return{
+
+        "answer":answer
 
     }
