@@ -1,154 +1,159 @@
+import json
+import re
 import plotly.express as px
-import pandas as pd
+
+from ai.chat_model import llm
 
 
 def generate_graph(df):
 
-    graphs = []
+    sample_df = df.head(30)
 
-    sample_df = df.head(50)
+    columns = sample_df.columns.tolist()
 
-    numeric_cols = list(
-        sample_df.select_dtypes(
-            include=[
-                'int64',
-                'float64'
-            ]
-        ).columns
-    )
-
-    categorical_cols = list(
-        sample_df.select_dtypes(
-            include=[
-                'object'
-            ]
-        ).columns
-    )
+    preview = sample_df.head(5).to_string()
 
 
-    numeric_cols = [
+    prompt = f"""
+You are a data visualization expert.
 
-        col
+Dataset columns:
+{columns}
 
-        for col in numeric_cols
+Dataset preview:
+{preview}
 
-        if sample_df[col].notna().sum() > 5
+Suggest maximum 4 useful graph ideas.
 
-    ]
+Return ONLY JSON.
 
+Example:
 
-    categorical_cols = [
+[
+  {{
+    "type":"bar",
+    "x":"Industry",
+    "y":"Revenue"
+  }},
+  {{
+    "type":"histogram",
+    "x":"Salary"
+  }}
+]
 
-        col
-
-        for col in categorical_cols
-
-        if sample_df[col].notna().sum() > 5
-
-    ]
+No markdown.
+No explanation.
+"""
 
 
     try:
 
-        # Bar chart
+        response = llm.invoke(prompt)
 
-        if (
-            len(categorical_cols) >= 1
-            and len(numeric_cols) >= 1
-        ):
+        content = response.content
 
-            fig = px.bar(
 
-                sample_df,
+        content = re.sub(
+            r"```json|```",
+            "",
+            content
+        ).strip()
 
-                x=categorical_cols[0],
 
-                y=numeric_cols[0],
+        recommendations = json.loads(
+            content
+        )
 
-                title=
-                f"{numeric_cols[0]} by {categorical_cols[0]}"
 
+    except Exception as e:
+
+        print("Graph error:", e)
+
+        recommendations = []
+
+
+    graphs = []
+
+
+    for rec in recommendations:
+
+        try:
+
+            chart_type = rec.get(
+                "type"
             )
+
+            x = rec.get(
+                "x"
+            )
+
+            y = rec.get(
+                "y"
+            )
+
+
+            if x not in sample_df.columns:
+                continue
+
+
+            if (
+                y
+                and
+                y not in sample_df.columns
+            ):
+                continue
+
+
+            if chart_type == "bar":
+
+                fig = px.bar(
+                    sample_df,
+                    x=x,
+                    y=y
+                )
+
+
+            elif chart_type == "scatter":
+
+                fig = px.scatter(
+                    sample_df,
+                    x=x,
+                    y=y
+                )
+
+
+            elif chart_type == "histogram":
+
+                fig = px.histogram(
+                    sample_df,
+                    x=x
+                )
+
+
+            elif chart_type == "pie":
+
+                vals = (
+                    sample_df[x]
+                    .value_counts()
+                    .head(5)
+                )
+
+                fig = px.pie(
+                    values=vals.values,
+                    names=vals.index
+                )
+
+            else:
+
+                continue
+
 
             graphs.append(
                 fig.to_json()
             )
 
-
-        # Scatter
-
-        if len(numeric_cols) >= 2:
-
-            fig = px.scatter(
-
-                sample_df,
-
-                x=numeric_cols[0],
-
-                y=numeric_cols[1],
-
-                title=
-                f"{numeric_cols[0]} vs {numeric_cols[1]}"
-
-            )
-
-            graphs.append(
-                fig.to_json()
-            )
+        except:
+            pass
 
 
-        # Histogram
-
-        if len(numeric_cols) >= 1:
-
-            fig = px.histogram(
-
-                sample_df,
-
-                x=numeric_cols[0],
-
-                title=
-                f"{numeric_cols[0]} Distribution"
-
-            )
-
-            graphs.append(
-                fig.to_json()
-            )
-
-
-        # Pie
-
-        if len(categorical_cols) >= 1:
-
-            top_data = (
-                sample_df[
-                    categorical_cols[0]
-                ]
-                .value_counts()
-                .head(5)
-            )
-
-
-            fig = px.pie(
-
-                values=
-                top_data.values,
-
-                names=
-                top_data.index,
-
-                title=
-                f"Top {categorical_cols[0]}"
-
-            )
-
-            graphs.append(
-                fig.to_json()
-            )
-
-    except:
-        pass
-
-
-    return graphs[:4]
+    return graphs

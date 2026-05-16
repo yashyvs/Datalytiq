@@ -58,7 +58,7 @@ export default function SummaryPanel({ data }: Props) {
       />
 
       {openSection === "preview" && (
-        <div className="mt-3 bg-zinc-900 rounded-2xl p-4 overflow-auto">
+        <div className="mt-3 mb-3 bg-zinc-900 rounded-2xl p-4 overflow-auto">
           <table className="w-full text-sm">
             <thead>
               <tr>

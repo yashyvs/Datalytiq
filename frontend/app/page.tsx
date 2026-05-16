@@ -1,86 +1,115 @@
 "use client";
 
 import { useState } from "react";
-import SummaryPanel from "@/components/SummaryPanel";
+
 import UploadBox from "@/components/UploadBox";
-import api from "@/services/api";
-import GraphPanel from "@/components/GraphPanel"
+import SummaryPanel from "@/components/SummaryPanel";
+import GraphPanel from "@/components/GraphPanel";
 import ChatPanel from "@/components/ChatPanel";
 import InsightPanel from "@/components/InsightPanel";
 
-export default function Home() {
-  const [data, setData] = useState(null);
+import api from "@/services/api";
 
-  async function handleUpload(file: any) {
+export default function Home() {
+  const [data, setData] = useState<any>(null);
+
+  const [loading, setLoading] = useState(false);
+
+  async function handleUpload(file: File) {
     const formData = new FormData();
 
     formData.append("file", file);
 
-    const response = await api.post("/upload", formData);
+    setLoading(true);
 
-    setData(response.data);
+    try {
+      const response = await api.post("/upload", formData);
+
+      setData(response.data);
+    } catch (error) {
+      console.log(error);
+
+      alert("Upload failed");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div
       className="
-min-h-screen
-bg-black
-text-white
-p-6
-"
+      min-h-screen
+      bg-black
+      text-white
+      p-6
+      "
     >
-      <h1
+      <div
         className="
-text-4xl
-font-bold
-mb-8
-"
+        max-w-[1600px]
+        mx-auto
+        "
       >
-        Datalytiq
-      </h1>
-
-      <UploadBox onUpload={handleUpload} />
-
-      {data && (
-        <div
+        <h1
           className="
-grid
-grid-cols-12
-gap-6
-mt-8
-"
+          text-5xl
+          font-bold
+          mb-2
+          "
         >
-          {/* LEFT */}
+          Datalytiq
+        </h1>
 
+        <p
+          className="
+          text-zinc-400
+          mb-8
+          "
+        >
+          Upload, visualize and chat with your data
+        </p>
+
+        <UploadBox onUpload={handleUpload} loading={loading} />
+
+        {data && (
           <div
             className="
-col-span-9
-space-y-6
-"
+              grid
+              grid-cols-12
+              gap-6
+              mt-8
+              "
           >
-            <SummaryPanel data={data.summary} />
+            {/* LEFT SIDE */}
 
-            <InsightPanel insights={data.insights} />
+            <div
+              className="
+                col-span-9
+                space-y-6
+                "
+            >
+              <SummaryPanel data={data.summary} />
 
-            <GraphPanel graph={data.graph} />
+              <InsightPanel insights={data.insights} />
+
+              <GraphPanel graph={data.graph} />
+            </div>
+
+            {/* RIGHT SIDE */}
+
+            <div
+              className="
+                col-span-3
+                sticky
+                top-4
+                self-start
+                "
+            >
+              <ChatPanel />
+            </div>
           </div>
-
-          {/* RIGHT */}
-
-          <div
-            className="
-col-span-3
-sticky
-top-4
-self-start
-h-[90vh]
-"
-          >
-            <ChatPanel />
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
