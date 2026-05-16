@@ -7,58 +7,49 @@ const Plot = dynamic(() => import("react-plotly.js"), {
 });
 
 type Props = {
-  graph: any;
+  graph: any[];
 };
 
 export default function GraphPanel({ graph }: Props) {
-  if (!graph) {
-    return null;
-  }
-
-  const parsedGraph = JSON.parse(graph);
+  if (!graph || graph.length === 0) return null;
 
   return (
-    <div
-      className="
-      mt-10
-      bg-zinc-900
-      border
-      border-zinc-700
-      rounded-2xl
-      p-6
-      text-white
-      "
-    >
-      <h2
-        className="
-        text-2xl
-        font-bold
-        mb-6
-        "
-      >
-        Auto Generated Graph
-      </h2>
+    <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 shadow-xl">
+      <h2 className="text-2xl font-bold text-white mb-6">Visual Insights</h2>
 
-      <Plot
-        data={parsedGraph.data}
-        layout={{
-          ...parsedGraph.layout,
+      <div className="grid grid-cols-2 gap-6">
+        {graph.map((g: any, i: number) => {
+          const parsed = JSON.parse(g);
 
-          autosize: true,
-
-          paper_bgcolor: "#18181b",
-
-          plot_bgcolor: "#18181b",
-
-          font: {
-            color: "white",
-          },
-        }}
-        style={{
-          width: "100%",
-          height: "500px",
-        }}
-      />
+          return (
+            <div
+              key={i}
+              className="
+                  bg-zinc-900
+                  rounded-2xl
+                  p-3
+                "
+            >
+              <Plot
+                data={parsed.data}
+                layout={{
+                  ...parsed.layout,
+                  paper_bgcolor: "#18181b",
+                  plot_bgcolor: "#18181b",
+                  font: {
+                    color: "white",
+                  },
+                  autosize: true,
+                }}
+                style={{
+                  width: "100%",
+                  height: "400px",
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

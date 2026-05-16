@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from tools.chat_tool import ask_data
 from pydantic import BaseModel
 import state
+from tools.insight_tool import generate_insights
 
 from tools.graph_tool import generate_graph
 
@@ -61,7 +62,8 @@ async def upload_file(
     summary = generate_summary(df)
 
     graph = generate_graph(df)
-    print(df.dtypes)
+    
+    insights = generate_insights(df)
 
     return {
 
@@ -69,7 +71,9 @@ async def upload_file(
 
         "summary": summary,
 
-        "graph": graph
+        "graph": graph,
+        
+        "insights": insights
 
     }
 @app.post("/chat")

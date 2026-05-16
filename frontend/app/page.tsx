@@ -6,6 +6,7 @@ import UploadBox from "@/components/UploadBox";
 import api from "@/services/api";
 import GraphPanel from "@/components/GraphPanel"
 import ChatPanel from "@/components/ChatPanel";
+import InsightPanel from "@/components/InsightPanel";
 
 export default function Home() {
   const [data, setData] = useState(null);
@@ -21,18 +22,63 @@ export default function Home() {
   }
 
   return (
-    <div className="p-10">
-      <h1 className="text-4xl font-bold mb-8">Datalytiq</h1>
+    <div
+      className="
+min-h-screen
+bg-black
+text-white
+p-6
+"
+    >
+      <h1
+        className="
+text-4xl
+font-bold
+mb-8
+"
+      >
+        Datalytiq
+      </h1>
 
       <UploadBox onUpload={handleUpload} />
 
       {data && (
-        <div className="mt-10">
-          <h2 className="font-bold">Dataset Summary</h2>
+        <div
+          className="
+grid
+grid-cols-12
+gap-6
+mt-8
+"
+        >
+          {/* LEFT */}
 
-          <SummaryPanel data={data.summary} />
-          <GraphPanel graph={data.graph} />
-          <ChatPanel />
+          <div
+            className="
+col-span-9
+space-y-6
+"
+          >
+            <SummaryPanel data={data.summary} />
+
+            <InsightPanel insights={data.insights} />
+
+            <GraphPanel graph={data.graph} />
+          </div>
+
+          {/* RIGHT */}
+
+          <div
+            className="
+col-span-3
+sticky
+top-4
+self-start
+h-[90vh]
+"
+          >
+            <ChatPanel />
+          </div>
         </div>
       )}
     </div>

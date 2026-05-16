@@ -1,147 +1,69 @@
+"use client";
+
+import { useState } from "react";
+
 type Props = {
   data: any;
 };
 
 export default function SummaryPanel({ data }: Props) {
+  const [openSection, setOpenSection] = useState("");
+
+  function toggle(section: string) {
+    setOpenSection(openSection === section ? "" : section);
+  }
+
+  const totalMissing = Object.values(data.missing_values).reduce(
+    (a: any, b: any) => a + b,
+    0,
+  );
+
   return (
-    <div
-      className="
-      mt-10
-      bg-zinc-900
-      border
-      border-zinc-700
-      rounded-2xl
-      p-6
-      text-white
-      space-y-8
-      "
-    >
-      <h2 className="text-2xl font-bold">Dataset Summary</h2>
+    <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 shadow-xl">
+      <h1 className="text-2xl font-bold text-white mb-6">Dataset Overview</h1>
 
-      {/* Stats cards */}
+      <div className="grid grid-cols-4 gap-4 mb-8">
+        <Card title="Rows" value={data.rows} />
 
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="bg-zinc-800 p-5 rounded-xl">
-          <p className="text-gray-400">Rows</p>
+        <Card title="Columns" value={data.columns} />
 
-          <h1 className="text-3xl font-bold">{data.rows}</h1>
-        </div>
+        <Card title="Missing" value={totalMissing} />
 
-        <div className="bg-zinc-800 p-5 rounded-xl">
-          <p className="text-gray-400">Columns</p>
-
-          <h1 className="text-3xl font-bold">{data.columns}</h1>
-        </div>
-
-        <div className="bg-zinc-800 p-5 rounded-xl">
-          <p className="text-gray-400">Duplicate Rows</p>
-
-          <h1 className="text-3xl font-bold">{data.duplicate_rows}</h1>
-        </div>
+        <Card title="Duplicates" value={data.duplicate_rows} />
       </div>
 
-      {/* columns */}
+      <h3 className="text-white font-semibold mb-3">Columns</h3>
 
-      <div>
-        <h3
-          className="
-          font-bold
-          mb-4
-          "
-        >
-          Columns
-        </h3>
-
-        <div
-          className="
-          max-h-32
-          overflow-y-auto
-          flex
-          flex-wrap
-          gap-2
-          p-2
-          bg-zinc-800
-          rounded-xl
-          "
-        >
-          {data.column_names.map((col: string) => (
-            <span
-              key={col}
-              className="
-                  px-3
-                  py-1
-                  rounded-full
-                  bg-blue-600
-                  text-sm
-                  "
-            >
-              {col}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Missing values */}
-
-      <div>
-        <h3 className="font-bold mb-3">Missing Values</h3>
-
-        <div className="bg-zinc-800 rounded-xl p-4">
-          {Object.entries(data.missing_values).map(([key, value]: any) => (
-            <div
-              key={key}
-              className="
-flex
-justify-between
-border-b
-border-zinc-700
-py-2
-"
-            >
-              <span>{key}</span>
-
-              <span>{String(value)}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Preview */}
-
-      <div>
-        <h3
-          className="
-font-bold
-mb-4
-"
-        >
-          Preview
-        </h3>
-
-        <div
-          className="
-overflow-auto
-rounded-xl
-"
-        >
-          <table
+      <div className="flex flex-wrap gap-2 max-h-28 overflow-y-auto mb-6">
+        {data.column_names.map((col: string) => (
+          <span
+            key={col}
             className="
-w-full
-bg-zinc-800
-"
+                px-3
+                py-1
+                rounded-full
+                bg-zinc-800
+                text-sm
+                text-zinc-300
+              "
           >
+            {col}
+          </span>
+        ))}
+      </div>
+
+      <AccordionButton
+        title="Dataset Preview"
+        onClick={() => toggle("preview")}
+      />
+
+      {openSection === "preview" && (
+        <div className="mt-3 bg-zinc-900 rounded-2xl p-4 overflow-auto">
+          <table className="w-full text-sm">
             <thead>
               <tr>
                 {data.column_names.slice(0, 5).map((col: string) => (
-                  <th
-                    key={col}
-                    className="
-p-3
-text-left
-border-b
-border-zinc-700
-"
-                  >
+                  <th key={col} className="text-left pb-3 text-zinc-400">
                     {col}
                   </th>
                 ))}
@@ -152,14 +74,7 @@ border-zinc-700
               {data.preview.map((row: any, i: number) => (
                 <tr key={i}>
                   {data.column_names.slice(0, 5).map((col: string) => (
-                    <td
-                      key={col}
-                      className="
-p-3
-border-b
-border-zinc-700
-"
-                    >
+                    <td key={col} className="py-2 text-zinc-300">
                       {String(row[col])}
                     </td>
                   ))}
@@ -168,7 +83,57 @@ border-zinc-700
             </tbody>
           </table>
         </div>
-      </div>
+      )}
+
+      <AccordionButton
+        title="Missing Values"
+        onClick={() => toggle("missing")}
+      />
+
+      {openSection === "missing" && (
+        <div className="mt-3 bg-zinc-900 rounded-2xl p-4 max-h-64 overflow-y-auto">
+          {Object.entries(data.missing_values).map(([k, v]: any) => (
+            <div
+              key={k}
+              className="flex justify-between py-2 border-b border-zinc-800 text-zinc-300"
+            >
+              <span>{k}</span>
+
+              <span>{String(v)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+function Card({ title, value }: any) {
+  return (
+    <div className="bg-zinc-900 rounded-2xl p-5">
+      <p className="text-zinc-400 text-sm">{title}</p>
+
+      <h2 className="text-white text-3xl font-bold mt-2">{value}</h2>
+    </div>
+  );
+}
+
+function AccordionButton({ title, onClick }: any) {
+  return (
+    <button
+      onClick={onClick}
+      className="
+        w-full
+        bg-zinc-900
+        hover:bg-zinc-800
+        rounded-2xl
+        p-4
+        text-left
+        text-white
+        mb-3
+      "
+    >
+      {title}
+    </button>
   );
 }

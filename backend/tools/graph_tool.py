@@ -4,90 +4,151 @@ import pandas as pd
 
 def generate_graph(df):
 
-    sample_df = df.head(30)
+    graphs = []
+
+    sample_df = df.head(50)
 
     numeric_cols = list(
         sample_df.select_dtypes(
-            include=["int64", "float64"]
+            include=[
+                'int64',
+                'float64'
+            ]
         ).columns
     )
 
     categorical_cols = list(
         sample_df.select_dtypes(
-            include=["object"]
+            include=[
+                'object'
+            ]
         ).columns
     )
 
 
-    # Remove mostly empty columns
-
     numeric_cols = [
 
-        col for col in numeric_cols
+        col
+
+        for col in numeric_cols
 
         if sample_df[col].notna().sum() > 5
 
     ]
-
 
 
     categorical_cols = [
 
-        col for col in categorical_cols
+        col
+
+        for col in categorical_cols
 
         if sample_df[col].notna().sum() > 5
 
     ]
 
 
-    if len(numeric_cols)==0:
+    try:
 
-        return None
+        # Bar chart
 
+        if (
+            len(categorical_cols) >= 1
+            and len(numeric_cols) >= 1
+        ):
 
-    y_col=numeric_cols[0]
+            fig = px.bar(
 
+                sample_df,
 
-    # Prefer company/title over names
+                x=categorical_cols[0],
 
-    preferred=[
+                y=numeric_cols[0],
 
-        "Company Name",
-        "Title",
-        "Industry",
-        "Country"
+                title=
+                f"{numeric_cols[0]} by {categorical_cols[0]}"
 
-    ]
+            )
 
-
-    x_col=None
-
-
-    for col in preferred:
-
-        if col in sample_df.columns:
-
-            x_col=col
-
-            break
+            graphs.append(
+                fig.to_json()
+            )
 
 
-    if x_col is None and categorical_cols:
+        # Scatter
 
-        x_col=categorical_cols[0]
+        if len(numeric_cols) >= 2:
+
+            fig = px.scatter(
+
+                sample_df,
+
+                x=numeric_cols[0],
+
+                y=numeric_cols[1],
+
+                title=
+                f"{numeric_cols[0]} vs {numeric_cols[1]}"
+
+            )
+
+            graphs.append(
+                fig.to_json()
+            )
 
 
-    fig=px.bar(
+        # Histogram
 
-        sample_df,
+        if len(numeric_cols) >= 1:
 
-        x=x_col,
+            fig = px.histogram(
 
-        y=y_col,
+                sample_df,
 
-        title=f"{y_col} by {x_col}"
+                x=numeric_cols[0],
 
-    )
+                title=
+                f"{numeric_cols[0]} Distribution"
+
+            )
+
+            graphs.append(
+                fig.to_json()
+            )
 
 
-    return fig.to_json()
+        # Pie
+
+        if len(categorical_cols) >= 1:
+
+            top_data = (
+                sample_df[
+                    categorical_cols[0]
+                ]
+                .value_counts()
+                .head(5)
+            )
+
+
+            fig = px.pie(
+
+                values=
+                top_data.values,
+
+                names=
+                top_data.index,
+
+                title=
+                f"Top {categorical_cols[0]}"
+
+            )
+
+            graphs.append(
+                fig.to_json()
+            )
+
+    except:
+        pass
+
+
+    return graphs[:4]

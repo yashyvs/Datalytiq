@@ -5,9 +5,7 @@ import api from "@/services/api";
 
 export default function ChatPanel() {
   const [question, setQuestion] = useState("");
-
   const [messages, setMessages] = useState<any[]>([]);
-
   const [loading, setLoading] = useState(false);
 
   async function sendMessage() {
@@ -15,42 +13,35 @@ export default function ChatPanel() {
 
     const currentQuestion = question;
 
-    // clear immediately
     setQuestion("");
 
-    const userMessage = {
-      role: "user",
-
-      text: currentQuestion,
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        text: currentQuestion,
+      },
+    ]);
 
     setLoading(true);
 
     try {
-      const response = await api.post(
-        "/chat",
+      const response = await api.post("/chat", {
+        question: currentQuestion,
+      });
 
+      setMessages((prev) => [
+        ...prev,
         {
-          question: currentQuestion,
+          role: "assistant",
+          text: response.data.answer,
         },
-      );
-
-      const botMessage = {
-        role: "assistant",
-
-        text: response.data.answer,
-      };
-
-      setMessages((prev) => [...prev, botMessage]);
+      ]);
     } catch {
       setMessages((prev) => [
         ...prev,
-
         {
           role: "assistant",
-
           text: "Something went wrong",
         },
       ]);
@@ -59,105 +50,78 @@ export default function ChatPanel() {
     setLoading(false);
   }
 
-  function handleKeyDown(e: any) {
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       sendMessage();
     }
   }
 
   return (
-    <div
-      className="
-mt-10
-bg-zinc-900
-border
-border-zinc-700
-rounded-2xl
-p-6
-text-white
-"
-    >
-      <h2
-        className="
-text-2xl
-font-bold
-mb-6
-"
-      >
-        Talk to Dataset
-      </h2>
+    <div className="bg-zinc-950 border border-zinc-800 rounded-3xl h-[88vh] flex flex-col shadow-2xl">
+      <div className="p-5 border-b border-zinc-800">
+        <h2 className="text-xl font-semibold text-white">Ask Dataset</h2>
 
-      <div
-        className="
-h-80
-overflow-y-auto
-space-y-4
-mb-4
-"
-      >
+        <p className="text-sm text-zinc-400 mt-1">
+          Ask anything about uploaded data
+        </p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, i) => (
           <div
             key={i}
-            className={`
-
-p-3
-rounded-xl
-max-w-[80%]
-
-${msg.role === "user" ? "bg-blue-600 ml-auto" : "bg-zinc-800"}
-
-`}
+            className={`max-w-[85%] rounded-2xl p-3 text-sm ${
+              msg.role === "user"
+                ? "ml-auto bg-blue-600 text-white"
+                : "bg-zinc-800 text-zinc-100"
+            }`}
           >
             {msg.text}
           </div>
         ))}
 
         {loading && (
-          <div
-            className="
-bg-zinc-800
-p-3
-rounded-xl
-w-fit
-"
-          >
+          <div className="bg-zinc-800 w-fit p-3 rounded-2xl text-sm">
             Thinking...
           </div>
         )}
       </div>
 
-      <div
-        className="
-flex
-gap-2
-"
-      >
-        <input
-          value={question}
-          onKeyDown={handleKeyDown}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="
-Ask about your file...
-"
-          className="
-flex-1
-bg-zinc-800
-rounded-xl
-p-3
-outline-none
-"
-        />
+      <div className="border-t border-zinc-800 p-4">
+        <div className="flex items-center gap-2">
+          <input
+            value={question}
+            onKeyDown={handleKeyDown}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Ask about dataset..."
+            className="
+              flex-1
+              bg-zinc-900
+              border
+              border-zinc-700
+              rounded-xl
+              px-4
+              py-3
+              outline-none
+              text-white
+            "
+          />
 
-        <button
-          onClick={sendMessage}
-          className="
-bg-blue-600
-px-5
-rounded-xl
-"
-        >
-          Send
-        </button>
+          <button
+            onClick={sendMessage}
+            className="
+              shrink-0
+              bg-blue-600
+              hover:bg-blue-700
+              px-2
+              py-3
+              rounded-xl
+              text-white
+            "
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );
