@@ -2,50 +2,52 @@ from ai.chat_model import llm
 import state
 
 
-def ask_data(question):
+def ask_data(session_id: str, question: str) -> str:
 
-    df=state.current_df
+    session = state.sessions.get(session_id)
+    if not session:
+        return "Session not found. Please upload a file first."
 
+    df = session["df"]
+    history = session["history"]
 
-    if df is None:
+    # --- Build rich data context for the LLM ---
+    columns = ", ".join(df.columns.tolist())
+    preview = df.head(5).to_string()
 
-        return "No file uploaded"
+    try:
+        stats = df.describe(include="all").fillna("N/A").to_string()
+    except Exception:
+        stats = "Could not compute statistics."
 
+    # --- Include last 3 Q&A pairs for conversation memory ---
+    history_text = ""
+    for turn in history[-3:]:
+        history_text += f"User: {turn['question']}\nAssistant: {turn['answer']}\n\n"
 
-    columns=", ".join(
-        df.columns.tolist()
-    )
+    prompt = f"""You are a data analyst assistant. Answer the user's question based only on the dataset provided.
 
+Dataset columns: {columns}
 
-    preview=df.head(5).to_string()
-
-
-    prompt=f"""
-
-You are a data analyst.
-
-Dataset columns:
-
-{columns}
-
-
-Dataset preview:
-
+Sample rows (first 5):
 {preview}
 
+Dataset statistics:
+{stats}
 
-User question:
+{"Previous conversation:" + chr(10) + history_text if history_text else ""}
+User question: {question}
 
-{question}
-
-
-Answer based on dataset.
-
+Answer concisely and accurately based on the dataset above.
 """
 
+    response = llm.invoke(prompt)
+    answer = response.content
 
-    response = llm.invoke(
-    prompt
-)
+    # Save this turn to history
+    session["history"].append({
+        "question": question,
+        "answer": answer,
+    })
 
-    return response.content
+    return answer

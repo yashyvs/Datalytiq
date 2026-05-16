@@ -3,47 +3,37 @@ import shutil
 import pandas as pd
 from fastapi import UploadFile
 
-UPLOAD_DIR="uploads"
+UPLOAD_DIR = "uploads"
+ALLOWED_EXTENSIONS = {".csv", ".xlsx"}
 
-def save_file(file:UploadFile):
 
-    os.makedirs(
-        UPLOAD_DIR,
-        exist_ok=True
-    )
+def save_file(file: UploadFile) -> str:
 
-    file_path=os.path.join(
-        UPLOAD_DIR,
-        file.filename
-    )
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-    with open(
-        file_path,
-        "wb"
-    ) as buffer:
+    # Sanitize filename — strip any path components
+    safe_name = os.path.basename(file.filename)
+    file_path = os.path.join(UPLOAD_DIR, safe_name)
 
-        shutil.copyfileobj(
-            file.file,
-            buffer
-        )
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
 
     return file_path
 
 
-def load_dataframe(path):
+def load_dataframe(path: str) -> pd.DataFrame:
 
-    if path.endswith(".csv"):
+    ext = os.path.splitext(path)[-1].lower()
 
-        df=pd.read_csv(path)
+    if ext == ".csv":
+        df = pd.read_csv(path)
 
-    elif path.endswith(".xlsx"):
-
-        df=pd.read_excel(path)
+    elif ext == ".xlsx":
+        df = pd.read_excel(path, engine="openpyxl")
 
     else:
-
-        raise Exception(
-            "unsupported file"
+        raise ValueError(
+            f"Unsupported file type '{ext}'. Only CSV and XLSX are supported."
         )
 
     return df

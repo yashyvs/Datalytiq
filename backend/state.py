@@ -1,1 +1,1 @@
-current_df=None
+sessions: dict = {}
