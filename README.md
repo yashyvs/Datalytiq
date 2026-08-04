@@ -79,7 +79,7 @@ Datalytiq
 ### Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/Datalytiq.git
+git clone https://github.com/yash.yvs/Datalytiq.git
 cd Datalytiq
 ```
 
